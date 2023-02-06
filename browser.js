@@ -12,6 +12,7 @@ export function init(options) {
     options.sentryInitMaxWait,
     options.name,
     options.matcher,
+    options.sdk,
     options.dsn,
     options.release,
     options.integrations

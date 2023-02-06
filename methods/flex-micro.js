@@ -32,11 +32,13 @@ export default function initMicro(
   component_name,
   // regex matching origin URL and filename of micro component
   stack_matcher,
+  Sentry,
   dsn,
   release,
-  integrations
+  integrations = []
 ) {
   stack_matcher = stack_matcher || new RegExp(`http[s]?://(localhost:8000|(www\\.)?sentry-module-frontend\\.net)(\/.*)?\/${component_name}(\.min)?\\.js`);
+  Sentry = Sentry || window.Sentry;
   dsn = dsn || window[`${component_name.toUpperCase()}_DSN`];
   release = release || window[`${component_name.toUpperCase()}_RELEASE`];
 
