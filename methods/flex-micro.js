@@ -338,8 +338,9 @@ function initMicro(
         beforeSend: (event, hint) => {
           let stack = hint.originalException.stack || hint.syntheticException.stack;
           let micro = match(stack);
+          console.log('micro', micro);
           if (micro) {
-            // event.release = micro.client._options.release;
+            event.release = micro.client._options?.release || event.release;
             micro.client.captureEvent(event);
           }
           return null; // host error, don't care
