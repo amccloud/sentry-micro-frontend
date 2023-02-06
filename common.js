@@ -100,7 +100,7 @@ export async function dynamic_load_sentry(module, load_script=true) {
   let sentry_sdk_src = `https://browser.sentry-cdn.com/${sdk_version_and_bundle}`; 
 
   if (load_script) {
-    if (!(module === 'micro' && 'micro_sandbox_dont_load_script' in method_impl)) {
+    if (!(['micro', 'micro2'].includes(module) && 'micro_sandbox_dont_load_script' in method_impl)) {
       await dynamic_load_script(sentry_sdk_src);
     }
   }
@@ -111,7 +111,9 @@ export async function dynamic_load_sentry(module, load_script=true) {
     sticky_checkbox_get(`${module}_sentry_debug`),
     {tags: {mv: `${method}@${sdk_version_and_bundle}`}},
     ['localhost', /^\//, (new URL(BACKEND)).hostname],
-    sentry_sdk_src
+    sentry_sdk_src,
+    2000,
+    module
   );
   
   fool_isNativeFetch(); // need to do this again

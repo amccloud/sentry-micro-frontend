@@ -48,17 +48,21 @@ iframe#sandbox {
   color: #2f1937;
 }
 
-#micro_mount_point {
+#micro_mount_point,
+#micro2_mount_point {
   flex-grow: 1;
 }
-#micro .module_header {
+#micro .module_header,
+#micro2 .module_header {
   background-color: rgb(245, 84, 89);
   color: white;
 }
-.module_root#micro {
+.module_root#micro,
+.module_root#micro2 {
   position:relative;
   width: 80%;
-  height: 70%;
+  height: 50%;
+    top: 30%;
 
   border: 1px rgb(245, 84, 89) solid;
   background: rgb(240, 200, 201);

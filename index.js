@@ -9,16 +9,22 @@ app.set('view engine', 'ejs');
 app.set('views', __dirname);
 
 app.get('/', (request, response) => {
-    response.render('index', {
-      example_var: 'hello world',
-    });
+  response.render('index', {
+    example_var: 'hello world',
   });
+});
 
 app.get('/sandbox-basic/', (request, response) => {
-    response.render('sandbox-basic/index', {
-      example_var: 'Hello World',
-    });
+  response.render('sandbox-basic/index', {
+    example_var: 'Hello World',
   });
+});
+
+app.get('/sandbox-2micro/', (request, response) => {
+  response.render('sandbox-2micro/index', {
+    example_var: 'Hello World',
+  });
+});
 
 app.listen(port, () => {
   console.log(`Sentry Micro-Frontend Sandbox is being served at http://localhost:${port}/ ...`)
