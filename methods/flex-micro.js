@@ -304,13 +304,20 @@ export default function initMicro(
   var init_micro_client = function() {
     const context = {};
 
-    let eventProcessor;
+    // Custom integration event processor to define integrations on the event
+    let eventProcessor = (event) => {
+      if (event.sdk) {
+        event.sdk.integrations = integrations.map(Integration => Integration.name);
+      }
+
+      return event;
+    };
+
+    // Compose each integration into a single eventProcssor
     integrations.forEach((integration) => {
-      integration.setupOnce(
+      integration.setupOnce( // TODO: Some integrations do not respect this custom scope
         (f) => {
-          eventProcessor = eventProcessor
-            ? composeEventProcessor(eventProcessor, f) // Last integration runs first
-            : f;
+          eventProcessor = composeEventProcessor(eventProcessor, f); // Last integration runs first
         },
         () => ({
           getIntegration: (Integration) => context, // TODO: Also Integration._handler?
