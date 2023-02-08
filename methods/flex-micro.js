@@ -97,11 +97,15 @@ export default function initMicro(
 
   var match = function(stack) {
     let micros = window.__SENTRY_MICRO__.instances;
+
+    if (stack) {
     for (const iname in micros) {
       if (stack.match(micros[iname].matcher)) {
         return micros[iname];
       }
     }
+    }
+  
     return null;
   };
 
