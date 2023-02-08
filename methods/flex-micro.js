@@ -32,13 +32,13 @@ export default function initMicro(
   component_name,
   // regex matching origin URL and filename of micro component
   stack_matcher,
-  Sentry,
+  sdk,
   dsn,
   release,
   integrations = []
 ) {
   stack_matcher = stack_matcher || new RegExp(`http[s]?://(localhost:8000|(www\\.)?sentry-module-frontend\\.net)(\/.*)?\/${component_name}(\.min)?\\.js`);
-  Sentry = Sentry || window.Sentry;
+  sdk = sdk || window.Sentry;
   dsn = dsn || window[`${component_name.toUpperCase()}_DSN`];
   release = release || window[`${component_name.toUpperCase()}_RELEASE`];
 
@@ -315,11 +315,11 @@ export default function initMicro(
       );
     });
 
-    window.__SENTRY_MICRO__.instances[component_name].client = new Sentry.BrowserClient({
+    window.__SENTRY_MICRO__.instances[component_name].client = new sdk.BrowserClient({
       dsn,
       release,
       debug: !(debug === undefined || debug === false), /* remove this (sandbox) */
-      transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
+      transport: ("fetch" in window ? sdk.makeFetchTransport : sdk.makeXHRTransport),
       integrations: [], // Fixes #1
       beforeSend: (event, hint) => eventProcessor(event, hint)
     });
@@ -403,7 +403,7 @@ export default function initMicro(
   }
 
   var load_sentry_sdk_if_needed_then = function(callback) {
-    if (is_sentry_sdk_loaded()) {
+    if (sdk || is_sentry_sdk_loaded()) {
       callback();
     } else {
       dynamic_load_sentry_sdk(callback);
@@ -454,11 +454,17 @@ export default function initMicro(
 
     after_max_wait(() => {
       load_sentry_sdk_if_needed_then(() => {
+        sdk = sdk || window.Sentry;
+
+        if (!integrations?.length) {
+          integrations = [new sdk.Integrations.Dedupe()];
+        }
+
         if (is_sentry_initialized()) {
           micro_init(); // if not already, see temp_queueing_patch() and patch_immediately...
         } else {
           init_micro_client();
-          normal_filtering_sentry_init(orig_sentry_init ? orig_sentry_init : Sentry.init);
+          normal_filtering_sentry_init(orig_sentry_init ? orig_sentry_init : sdk.init);
           process_queued_errors();
           // TODO what if host wakes up from coma and calls Sentry.init() after this? should
           // we stub Sentry.init() with something that will report a meaningful message to
