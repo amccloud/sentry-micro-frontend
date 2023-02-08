@@ -332,6 +332,8 @@ export default function initMicro(
       debug: !(debug === undefined || debug === false), /* remove this (sandbox) */
       transport: ("fetch" in window ? sdk.makeFetchTransport : sdk.makeXHRTransport),
       integrations: [], // Fixes #1
+      attachStacktrace: true,
+      stackParser: sdk.defaultStackParser, // Won't work in MFE harness unless exposed by Sentry's CDN https://github.com/getsentry/sentry-javascript/issues/7102
       beforeSend: (event, hint) => eventProcessor(event, hint)
     });
   }
