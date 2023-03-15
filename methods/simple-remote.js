@@ -46,7 +46,7 @@ window.SENTRY_INIT_METHODS["simple-remote"] = {
 
                       for (const iname in micros) {
                         if (stack.match(micros[iname].matcher)) {
-                          event.release = micros[iname].client._options.release;
+                          event.release = micros[iname].client.getOptions().release;
                           micros[iname].client.captureEvent(event);
                           return null;
                         }
@@ -77,7 +77,8 @@ window.SENTRY_INIT_METHODS["simple-remote"] = {
         dsn: MICRO_DSN,
         release: MICRO_RELEASE,
         debug: debug, /* remove this (sandbox) */
-        transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport)
+        transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
+        integrations: []
       })
     };
   }
