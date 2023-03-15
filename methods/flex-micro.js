@@ -339,6 +339,8 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
         release: MICRO_RELEASE,
         debug: !(debug === undefined || debug === false), /* remove this (sandbox) */
         transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
+        attachStacktrace: Sentry.defaultStackParser !== undefined,
+        stackParser: Sentry.defaultStackParser, 
         integrations: [],
         beforeSend: (event, hint) => event_processor(event, hint)
       });
