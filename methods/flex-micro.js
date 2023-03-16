@@ -41,7 +41,12 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     component_name = 'micro', 
     // regex matching origin URL and filename of micro component
     stack_matcher = /http[s]?:\/\/(localhost:8000|(www\.)?sentry-micro-frontend\.net)(\/.*)?\/micro(\.min)?\.js/,
-    )  {
+    sdk = window.Sentry,
+    dsn = window.MICRO_DSN,
+    environment,
+    release = window.MICRO_RELEASE,
+    integrations = []
+  )  {
     
     var is_sentry_sdk_loaded = function() {
       return 'Sentry' in window; 
@@ -98,7 +103,7 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     var match = function(stack) {
       if (stack) {
         let micros = window.__SENTRY_MICRO__.instances;
-        for (const iname in micros) {
+        for (const iname in micros) {          
           if (stack.match(micros[iname].matcher)) {
             return micros[iname];
           }
@@ -337,13 +342,14 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
         )
       });
 
-      window.__SENTRY_MICRO__.instances[component_name].client = new Sentry.BrowserClient({
-        dsn: MICRO_DSN,
-        release: MICRO_RELEASE,
+      window.__SENTRY_MICRO__.instances[component_name].client = new sdk.BrowserClient({
+        dsn,
+        environment,
+        release,
         debug: !(debug === undefined || debug === false), /* remove this (sandbox) */
-        transport: ("fetch" in window ? Sentry.makeFetchTransport : Sentry.makeXHRTransport),
-        attachStacktrace: Sentry.defaultStackParser !== undefined,
-        stackParser: Sentry.defaultStackParser, 
+        transport: ("fetch" in window ? sdk.makeFetchTransport : sdk.makeXHRTransport),
+        attachStacktrace: sdk.defaultStackParser !== undefined,
+        stackParser: sdk.defaultStackParser, 
         integrations: [],
         beforeSend: (event, hint) => event_processor(event, hint)
       });
@@ -355,10 +361,11 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
 
     var normal_filtering_sentry_init = function(init_function) {
       init_function({
-          dsn: MICRO_DSN,
-          release: MICRO_RELEASE,
+          dsn,
+          environment,
+          release,
           debug: !(debug === undefined || debug === false), 
-          integrations: tracing === undefined || tracing === false ? [] : [new Sentry.BrowserTracing({
+          integrations: tracing === undefined || tracing === false ? [] : [new sdk.BrowserTracing({
             tracePropagationTargets: trace_propagation_targets 
           }) ],
           tracesSampleRate: 1.0,
@@ -427,10 +434,15 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     }
     
     var load_sentry_sdk_if_needed_then = function(callback) {
-      if (is_sentry_sdk_loaded()) {
+      var ready = () => {
+        sdk = sdk || window.Sentry;
         callback();
+      };
+
+      if (sdk || is_sentry_sdk_loaded()) {
+        ready();
       } else {
-        dynamic_load_sentry_sdk(callback);
+        dynamic_load_sentry_sdk(ready);
       }
     }
 
@@ -484,7 +496,7 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
             micro_init(); // if not already, see temp_queueing_patch() and patch_immediately...
           } else {
             init_micro_client();
-            normal_filtering_sentry_init(orig_sentry_init ? orig_sentry_init : Sentry.init);
+            normal_filtering_sentry_init(orig_sentry_init ? orig_sentry_init : sdk.init);
             process_queued_errors();
             // TODO what if host wakes up from coma and calls Sentry.init() after this? should 
             // we stub Sentry.init() with something that will report a meaningful message to 
@@ -495,3 +507,5 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     }
   }
 };
+
+export default window.SENTRY_INIT_METHODS["flex-micro"].init_micro_sentry;
