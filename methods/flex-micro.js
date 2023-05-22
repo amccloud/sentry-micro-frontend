@@ -47,7 +47,6 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
     release = window.MICRO_RELEASE,
     integrations = []
   )  {
-    
     var is_sentry_sdk_loaded = function() {
       return 'Sentry' in window; 
     }
@@ -311,10 +310,17 @@ window.SENTRY_INIT_METHODS["flex-micro"] = {
 
     var init_micro_client = function() {
       const integrationIndex = {};
-      const microHub = {
-        getIntegration: (integration) => integrationIndex[integration.name],
-        getClient: () => window.__SENTRY_MICRO__.instances[component_name].client
-      };
+      class MicroHub extends sdk.Hub {
+        getClient() {
+          return window.__SENTRY_MICRO__.instances[component_name].client;
+        }
+
+        getIntegration(integration) {
+          return integrationIndex[integration.name];
+        }
+      }
+
+      const microHub = new MicroHub();
 
       if (!integrations?.length) {
         integrations = [new sdk.Integrations.Dedupe()];
